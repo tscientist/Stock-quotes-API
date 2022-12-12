@@ -1,5 +1,6 @@
 const userModel = require("../models/user.js");
 const jwt = require("jsonwebtoken");
+const { comparePassword } = require("../utils/utils");
 
 const expirationInSeconds = 86400;
 
@@ -11,7 +12,7 @@ function createToken(req, res) {
             where: { email: req.body.email }
         })
     .then((result) => {
-        if (req.body.password !== result.password) {
+        if (!comparePassword(req.body.password, result.password)) {
             return res.status(400).json({ message: "Check credentials, email or password are incorrect!"});
         }
 
