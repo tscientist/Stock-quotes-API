@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  db:
+    container_name: 'mysql'
+    image: mysql:5.7.31
+    ports: 
+      - '3306:3306'
+    command:  --max_connections=1000 --init-file /docker-entrypoint-initdb.d/schema.sql
+    volumes:
+      # Persist data
+      #- "db_data:/var/lib/mysql"
+      # Mount the schema file
+      - "./schema.sql:/docker-entrypoint-initdb.d/schema.sql"
+    environment: 
+      - MYSQL_ROOT_USER= root
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_PASSWORD= root
+      - TZ= America/Sao_Paulo
+    restart: always
+
+volumes:
+  db_data:
