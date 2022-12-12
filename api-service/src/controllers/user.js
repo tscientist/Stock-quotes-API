@@ -1,17 +1,21 @@
 const userModel = require("../models/user.js");
 const emailService = require('../utils/emailService');
-const { generatePassword } = require("../utils/utils");
+const { generatePassword, hashPassword } = require("../utils/utils");
 
-function createUser(req, res) {
+async function createUser(req, res) {
+    const newPassword = generatePassword(32);
+    
+    const newPasswordHash = await hashPassword(newPassword);
+
     userModel.create({
         email: req.body.email,
-        password: generatePassword(),
+        password: newPasswordHash,
         role: req.body.role,
     })
     .then((result) => {
         res.status(200).json({
             "email" : result.email,
-            "password": result.password
+            "password": newPassword
         })
     })
     .catch((error) => {
@@ -59,8 +63,29 @@ async function deleteUser(req, res) {
     userModel.findAll().then((result) => res.json(result));
 }
 
-function resetPassword (req, res) {   
-    emailService.sendEmail().then(() => res.status(200).json('Nova senha enviada para sua caixa de email!'));
+async function resetPassword (req, res) {
+    const user = await userModel.findOne({ raw: true, where: { email: req.body.email }});
+
+    if (!user) {
+        res.status(400).json('User not found!')
+    }
+
+    const newPassword = generatePassword(32);
+    const newPasswordHash = await hashPassword(newPassword);
+
+    await userModel.update({
+        password: newPasswordHash,
+    },
+    {
+        where: {
+            email: req.body.email,
+        },
+    }
+);
+
+    await emailService.sendEmail(newPassword, req.body.email);
+
+    res.status(200).json('Your new password was sent to your email adrress!');
 }
 
 function findAll(req, res) {
