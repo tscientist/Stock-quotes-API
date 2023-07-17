@@ -1,4 +1,4 @@
-# Node Challenge
+# Stock quotes API
 
 The goal of this project is to create a simple API with Node.js to allow users to query stock quotes.
 The project consists of two separate services:
